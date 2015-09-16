@@ -30,7 +30,8 @@ class DrawSpeedTween(ScopeEffect):
             self.finish_delay = finish_delay
 
     def update_fps(self, viewer):
-        viewer.wavout.fps = self.fps
+        if viewer.wavout:
+            viewer.wavout.setfps(self.fps)
         viewer.fixed_dt = 1.0 / float(self.fps)
 
     def create(self, viewer):

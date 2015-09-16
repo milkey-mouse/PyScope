@@ -1,10 +1,14 @@
-import numpy as np
+import warnings
+with warnings.catch_warnings():  # pypy's experimental version of numpy always screams at you
+    warnings.simplefilter("ignore")
+    import numpy as np
 import effects as fx
 import wireframe as wf
 import wavoutput as wav
 
 import time
 import sys
+import os
 
 
 class WireframeViewer(wf.WireframeGroup):
@@ -29,10 +33,10 @@ class WireframeViewer(wf.WireframeGroup):
 
         if filename:
             if fps:
-                self.wavout = wav.WavOutput(filename, fps)
+                self.wavout = wav.WavOutput(filename=filename, fps=fps)
             else:
-                self.wavout = wav.WavOutput(filename, 60)
-                #raise Warning("No FPS provided! Unless you're modifying it with an effect, please set the FPS on init.")
+                self.wavout = wav.WavOutput(filename=filename, fps=60)
+                print "Warning: No FPS provided! Unless you're modifying it with an effect, please set the FPS on init."
         else:
             self.wavout = None
         
@@ -182,9 +186,37 @@ class WireframeViewer(wf.WireframeGroup):
         if self.wavout:
             self.wavout.wavify(self.frame_vectors, self.width)
 
+    def lazycount(self):
+        """Run nothing but the frame counter, then reset."""
+        wireframes_tmp = self.wireframes
+        print "Lazy-counting frames..."
+        real_stdout = sys.stdout
+        sys.stdout = open(os.devnull,"w")
+        for effect in self.effects:
+            effect.create(self)
+        self.running = True
+        tmp = self.show_view
+        self.show_view = False
+        i = 0
+        while self.running:
+            dt = self.getdelta()
+            self.frame_update(self, dt)
+            for effect in self.effects:
+                effect.update(self, dt)
+            i += 1
+        print str(i) + " frames total."
+        self.running = False
+        self.show_view = tmp
+        self.wireframes = wireframes_tmp
+        sys.stdout = real_stdout
+        return i
+
+
     def fast_forward(self, frames):  # somewhat hacky
         """Run the main loop, without export, for a certain number of frames."""
         print "Fast-forwarding " + str(frames) + " frames..."
+        real_stdout = sys.stdout
+        sys.stdout = open(os.devnull,"w")
         if not self.has_run:
             for effect in self.effects:
                 effect.create(self)
@@ -193,8 +225,8 @@ class WireframeViewer(wf.WireframeGroup):
         tmp = self.show_view
         self.show_view = False
         for i in xrange(frames):
-            if i % 10 == 0:
-                print str(i + 1) + "/" + str(frames)
+            #if i % 10 == 9:
+            #    print str(i + 1) + "/" + str(frames)
             self.display()
             dt = self.getdelta()
             self.object_update(self, dt)
@@ -202,6 +234,7 @@ class WireframeViewer(wf.WireframeGroup):
                 effect.update(self, dt)
         self.running = False
         self.show_view = tmp
+        sys.stdout = real_stdout
 
     def record(self, frames, view=False):  # somewhat hacky
         """Run the main loop, with export, for a certain number of frames."""
@@ -214,7 +247,7 @@ class WireframeViewer(wf.WireframeGroup):
         tmp = self.show_view
         self.show_view = view
         for i in xrange(frames):
-            if i % 10 == 0:
+            if i % 10 == 9:
                 print str(i + 1) + "/" + str(frames)
             self.display()
             dt = self.getdelta()

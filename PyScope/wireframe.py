@@ -1,4 +1,7 @@
-import numpy as np
+import warnings
+with warnings.catch_warnings():  # pypy's experimental version of numpy always screams at you
+    warnings.simplefilter("ignore")
+    import numpy as np
 
 def translationMatrix(dx=0, dy=0, dz=0):
     """ Return matrix for translation along vector (dx, dy, dz). """

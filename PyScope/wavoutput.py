@@ -13,17 +13,14 @@ class WavOutput:
         self.wavbuffer = []
         self.samples_per_frame = rate / fps
         self.samplerate = rate
+        self.raw = filename.endswith(".raw")
+        if self.raw:
+            self.audio_out = open(filename, "wb")
+        else:
+            self.audio_out = wave.open(filename, "w")
+            self.audio_out.setparams((2, 2, rate, 0, 'NONE', 'not compressed'))
 
-        self.audio_out = wave.open(filename, 'w')
-        self.audio_out.setparams((2, 2, rate, 0, 'NONE', 'not compressed'))
-
-    @property
-    def fps(self):
-        """Updating this updates the number of samples per frame"""
-        return None
-
-    @fps.setter
-    def fps(self, value):
+    def setfps(self, value):
         self.samples_per_frame = self.samplerate / value
 
     def distance(self, p0, p1):
@@ -44,14 +41,20 @@ class WavOutput:
 
     def buffer_wav(self, chunk):
         if chunk is None:
-            self.audio_out.writeframes("".join(self.wavbuffer))
+            if self.raw:
+                self.audio_out.write("".join(self.wavbuffer))
+            else:
+                self.audio_out.writeframes("".join(self.wavbuffer))
             self.audio_out.close()
             del self.wavbuffer[:]
             return
         self.wavbuffer.append(chunk)
         if len(self.wavbuffer) > self.chunk_size:
-            self.audio_out.writeframes("".join(self.wavbuffer))
-            del self.wavbuffer[:]  # insta-clear with GC'
+            if self.raw:
+                self.audio_out.write("".join(self.wavbuffer))
+            else:
+                self.audio_out.writeframes("".join(self.wavbuffer))
+            del self.wavbuffer[:]  # insta-clear with GC
 
     def add_sample(self, vec):
         try:
