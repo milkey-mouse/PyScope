@@ -133,7 +133,7 @@ class Wireframe:
         
         self.nodes = np.dot(self.nodes, transformation_matrix)
     
-    def findCentre(self):
+    def findCenter(self):
         """ Find the spatial centre by finding the range of the x, y and z coordinates. """
 
         min_values = self.nodes[:,:-1].min(axis=0)
@@ -171,7 +171,7 @@ class WireframeGroup:
             print name
             wireframe.outputEdges()
     
-    def findCentre(self):
+    def findCenter(self):
         """ Find the central point of all the wireframes. """
         
         # There may be a more efficient way to find the minimums for a group of wireframes
