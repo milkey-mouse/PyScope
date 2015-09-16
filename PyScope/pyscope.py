@@ -55,7 +55,7 @@ num_workers = 10
 
 
 def setup_viewer(viewer):
-    viewer.addEffect(fx.DrawSpeedTween(1, 120, 2, 5))
+    viewer.addEffect(fx.DrawSpeedTween(1, 37, 1, 100))
     if scene == "shark":
         viewer.addWireframe('spin', obj.loadOBJ("shark.obj"))
         viewer.wireframes['spin'].transform(wf.scaleMatrix(150))
