@@ -27,7 +27,7 @@ class WireframeViewer(wf.WireframeGroup):
 
         if show_view:
             import pygame
-            self.screen = pygame.display.set_mode(size * 2)
+            self.screen = pygame.display.set_mode((size,) * 2)
             pygame.display.set_caption(name)
             self.timer = pygame.time.Clock()
 

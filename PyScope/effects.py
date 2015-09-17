@@ -1,4 +1,4 @@
-import midireader as midi
+import ussreader as uss
 import math
 
 
@@ -57,10 +57,43 @@ class DrawSpeedTween(ScopeEffect):
 
 class MIDIModulator(ScopeEffect):
     def __init__(self, filename):
-        self.midi = midi.MidiReader(filename)
+        self.notes = uss.USSReader(filename).notes
+        self.last_time = -1.0
+        self.current_time = 0.0
+
+    def update_fps(self, viewer, fps):
+        if viewer.wavout:
+            viewer.wavout.setfps(fps)
+        viewer.fixed_dt = 1.0 / float(fps)
+
+
+    def get_notes(self, time):
+        result = []
+        for note in self.notes:
+            if note[0] >= self.last_time:
+                if note[0] <= time:
+                    result.append(note)
+                else:
+                    break
+        self.last_time = time
+        return result
 
     def create(self, viewer):
         viewer.removeEffect(DrawSpeedTween)
+        viewer.time_left = None
+        viewer.total_time = None
+        for note in self.get_notes(0.0)[::-1]:
+            self.notes.pop(0)
+            self.update_fps(viewer, int(note[1]))
+        self.next_note = self.notes.pop(0)
+        self.timer = 0.0
 
     def update(self, viewer, dt):
-        pass
+        self.timer += dt
+        if self.timer >= self.next_note[0]:
+            print self.next_note
+            if self.next_note[1] is None:
+                viewer.running = False
+                return
+            self.update_fps(viewer, self.next_note[1])
+            self.next_note = self.notes.pop(0)

@@ -1,6 +1,5 @@
 import wireframeDisplay as wd
 import basicShapes as shape
-import midireader as midi
 import wavoutput as wav
 import objparser as obj
 import wireframe as wf
@@ -18,17 +17,13 @@ with warnings.catch_warnings():  # pypy's experimental version of numpy always s
     import numpy as np
 
 
-def object_update(self, dt):
-    self.wireframes['spin'].transform(wf.rotateAboutVector(self.wireframes['spin'].findCenter(), (0,1,0), np.pi * 2 * spin_speed * dt))
-
-
 def run(filename, framerange=None, get_viewer=False, silent=False):
     if silent:
         real_stdout = sys.stdout
         sys.stdout = open(os.devnull,"w")
     if framerange and framerange[1] is not None:
         assert framerange[1] - framerange[0] > 0
-    viewer = wd.WireframeViewer(800, run_time=(1.0 / spin_speed) * spin_times, filename=filename)
+    viewer = wd.WireframeViewer(800, run_time=(1.0 / spin_speed) * spin_times, filename=filename, show_view=False)
     setup_viewer(viewer)
     if framerange is not None:
         viewer.fast_forward(framerange[0])
@@ -38,7 +33,8 @@ def run(filename, framerange=None, get_viewer=False, silent=False):
             viewer.run()
     else:
         viewer.run()
-    real_stdout.write("Worker for " + filename + " finished.\n")
+    if silent:
+        real_stdout.write("Worker for " + filename + " finished.\n")
 
 
 def get_num_frames():
@@ -49,9 +45,9 @@ def get_num_frames():
 spin_speed = 0.05
 spin_times = 1.25
 fps = 1
-scene = "watchdogs"
+scene = "cube"
 
-concurrent = True
+concurrent = False
 num_workers = 10
 
 
@@ -72,8 +68,15 @@ def setup_viewer(viewer):
         viewer.wireframes['spin'].transform(wf.scaleMatrix(3))
         viewer.wireframes['spin'].transform(wf.rotateZMatrix(-np.pi))
         viewer.wireframes['spin'].transform(wf.rotateYMatrix(-np.pi))
+    elif scene == "milkey":
+        viewer.addEffect(fx.MIDIModulator("milkey.uss"))
+        viewer.addWireframe('spin', obj.loadOBJ("milkey.obj"))
+        viewer.wireframes['spin'].transform(wf.scaleMatrix(2))
+        viewer.wireframes['spin'].transform(wf.rotateZMatrix(-np.pi))
+        viewer.wireframes['spin'].transform(wf.rotateYMatrix(-np.pi))
     elif scene == "cube":
         viewer.addEffect(fx.DrawSpeedTween(1, 250, 2, 50))
+        viewer.addEffect(fx.MIDIModulator("milkey.uss"))
         viewer.addWireframe('spin', shape.Cuboid((0,)*3, (150,)*3))
     elif scene == "sphere":
         viewer.addEffect(fx.DrawSpeedTween(0.25, 130, 0.25, 20))
@@ -82,9 +85,11 @@ def setup_viewer(viewer):
     viewer.key_to_function = {}
     viewer.object_update = object_update
 
+def object_update(self, dt):
+    #self.wireframes['spin'].transform(wf.rotateAboutVector(self.wireframes['spin'].findCenter(), (0,1,0), np.pi * 2 * spin_speed * dt))
+    pass
+
 if __name__ == '__main__':
-    mid = midi.MidiReader("milkey.mid")
-    sys.exit()
     if concurrent:
         total_frames = get_num_frames()
         print "Dividing workload among workers..."
@@ -136,4 +141,4 @@ if __name__ == '__main__':
         except:
             pass
     else:
-        run("oscilloscope\data\konichiwa.wav", framerange=(0,110))
+        run("oscilloscope\data\konichiwa.wav")
