@@ -88,6 +88,14 @@ class WireframeViewer(wf.WireframeGroup):
             raise Exception("Not a derivative of effects.ScopeEffect.")
         else:
             self.effects.append(effect)
+
+    def removeEffect(self, effect_class):
+        to_delete = []
+        for effect in self.effects:
+            if isinstance(effect, effect_class):
+                to_delete.append(effect)
+        for effect in to_delete:
+            self.effects.remove(effect)
         
     def centerWireframe(self, name, z=0):
         target = self.wireframes[name]

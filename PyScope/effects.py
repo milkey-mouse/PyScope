@@ -1,3 +1,4 @@
+import midireader as midi
 import math
 
 
@@ -52,3 +53,14 @@ class DrawSpeedTween(ScopeEffect):
         elif self.finish_delay:
             print "Ramping FPS: " + str(self.fps)
         self.update_fps(viewer)
+
+
+class MIDIModulator(ScopeEffect):
+    def __init__(self, filename):
+        self.midi = midi.MidiReader(filename)
+
+    def create(self, viewer):
+        viewer.removeEffect(DrawSpeedTween)
+
+    def update(self, viewer, dt):
+        pass

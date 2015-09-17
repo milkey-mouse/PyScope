@@ -1,5 +1,6 @@
 import wireframeDisplay as wd
 import basicShapes as shape
+import midireader as midi
 import wavoutput as wav
 import objparser as obj
 import wireframe as wf
@@ -48,29 +49,42 @@ def get_num_frames():
 spin_speed = 0.05
 spin_times = 1.25
 fps = 1
-scene = "shark"
+scene = "watchdogs"
 
 concurrent = True
 num_workers = 10
 
 
 def setup_viewer(viewer):
-    viewer.addEffect(fx.DrawSpeedTween(1, 37, 1, 100))
     if scene == "shark":
+        viewer.addEffect(fx.DrawSpeedTween(1, 45, 1, 20))
         viewer.addWireframe('spin', obj.loadOBJ("shark.obj"))
         viewer.wireframes['spin'].transform(wf.scaleMatrix(150))
     elif scene == "text":
+        viewer.addEffect(fx.DrawSpeedTween(1, 150, 1, 50))
         viewer.addWireframe('spin', obj.loadOBJ("text_test.obj"))
         viewer.wireframes['spin'].transform(wf.scaleMatrix(3))
         viewer.wireframes['spin'].transform(wf.rotateZMatrix(-np.pi))
         viewer.wireframes['spin'].transform(wf.rotateYMatrix(-np.pi))
+    elif scene == "watchdogs":
+        viewer.addEffect(fx.DrawSpeedTween(1, 70, 1, 10))
+        viewer.addWireframe('spin', obj.loadOBJ("watchdogs.obj"))
+        viewer.wireframes['spin'].transform(wf.scaleMatrix(3))
+        viewer.wireframes['spin'].transform(wf.rotateZMatrix(-np.pi))
+        viewer.wireframes['spin'].transform(wf.rotateYMatrix(-np.pi))
     elif scene == "cube":
+        viewer.addEffect(fx.DrawSpeedTween(1, 250, 2, 50))
         viewer.addWireframe('spin', shape.Cuboid((0,)*3, (150,)*3))
+    elif scene == "sphere":
+        viewer.addEffect(fx.DrawSpeedTween(0.25, 130, 0.25, 20))
+        viewer.addWireframe('spin', shape.Spheroid((0,)*3, (150,)*3))
     viewer.centerWireframe("spin")
     viewer.key_to_function = {}
     viewer.object_update = object_update
 
 if __name__ == '__main__':
+    mid = midi.MidiReader("milkey.mid")
+    sys.exit()
     if concurrent:
         total_frames = get_num_frames()
         print "Dividing workload among workers..."
