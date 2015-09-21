@@ -1,5 +1,4 @@
 import struct
-import midi
 
 
 class USSReader:
