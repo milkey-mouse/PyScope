@@ -84,16 +84,17 @@ class MIDIModulator(ScopeEffect):
         viewer.total_time = None
         for note in self.get_notes(0.0)[::-1]:
             self.notes.pop(0)
-            self.update_fps(viewer, int(note[1]))
+            self.update_fps(viewer, int(note[0]))
         self.next_note = self.notes.pop(0)
-        self.timer = 0.0
+        self.update_fps(viewer, self.next_note[0])
+        self.timer = float(self.next_note[1])
 
     def update(self, viewer, dt):
         self.timer += dt
-        if self.timer >= self.next_note[0]:
+        if self.timer >= self.next_note[1]:
             print self.next_note
-            if self.next_note[1] is None:
+            if self.next_note[0] is None:
                 viewer.running = False
                 return
-            self.update_fps(viewer, self.next_note[1])
+            self.update_fps(viewer, self.next_note[0])
             self.next_note = self.notes.pop(0)

@@ -38,16 +38,16 @@ def run(filename, framerange=None, get_viewer=False, silent=False):
 
 
 def get_num_frames():
-    viewer = wd.WireframeViewer(800, run_time=(1.0 / spin_speed) * spin_times, filename=None)
+    viewer = wd.WireframeViewer(800, run_time=(1.0 / spin_speed) * spin_times, filename=None, show_view=False)
     setup_viewer(viewer)
     return viewer.lazycount()
 
 spin_speed = 0.05
 spin_times = 1.25
 fps = 1
-scene = "cube"
+scene = "milkey"
 
-concurrent = False
+concurrent = True
 num_workers = 10
 
 
@@ -70,24 +70,33 @@ def setup_viewer(viewer):
         viewer.wireframes['spin'].transform(wf.rotateYMatrix(-np.pi))
     elif scene == "milkey":
         viewer.addEffect(fx.MIDIModulator("milkey.uss"))
-        viewer.addWireframe('spin', obj.loadOBJ("milkey.obj"))
-        viewer.wireframes['spin'].transform(wf.scaleMatrix(2))
-        viewer.wireframes['spin'].transform(wf.rotateZMatrix(-np.pi))
-        viewer.wireframes['spin'].transform(wf.rotateYMatrix(-np.pi))
+        viewer.addWireframe('head', shape.Spheroid((0,)*3, (150,)*3, resolution=5))
+        viewer.addWireframe('left_ear', shape.Spheroid((0,)*3, (75,)*3, resolution=3))
+        viewer.addWireframe('right_ear', shape.Spheroid((0,)*3, (75,)*3, resolution=3))
     elif scene == "cube":
         viewer.addEffect(fx.DrawSpeedTween(1, 250, 2, 50))
-        viewer.addEffect(fx.MIDIModulator("milkey.uss"))
         viewer.addWireframe('spin', shape.Cuboid((0,)*3, (150,)*3))
     elif scene == "sphere":
         viewer.addEffect(fx.DrawSpeedTween(0.25, 130, 0.25, 20))
         viewer.addWireframe('spin', shape.Spheroid((0,)*3, (150,)*3))
-    viewer.centerWireframe("spin")
+    if scene != "milkey":
+        viewer.centerWireframe("spin")
+    else:
+        viewer.centerWireframe("head")
+        viewer.centerWireframe("left_ear")
+        viewer.wireframes["left_ear"].transform(wf.translationMatrix(150, -150, 0))
+        viewer.centerWireframe("right_ear")
+        viewer.wireframes["right_ear"].transform(wf.translationMatrix(-150, -150, 0))
     viewer.key_to_function = {}
     viewer.object_update = object_update
 
 def object_update(self, dt):
-    #self.wireframes['spin'].transform(wf.rotateAboutVector(self.wireframes['spin'].findCenter(), (0,1,0), np.pi * 2 * spin_speed * dt))
-    pass
+    if scene == "milkey":
+        self.wireframes['head'].transform(wf.rotateAboutVector(self.wireframes['head'].findCenter(), (0,1,0), np.pi * 2 * spin_speed * dt))
+        self.wireframes['left_ear'].transform(wf.rotateAboutVector(self.wireframes['head'].findCenter(), (0,1,0), np.pi * 2 * spin_speed * dt))
+        self.wireframes['right_ear'].transform(wf.rotateAboutVector(self.wireframes['head'].findCenter(), (0,1,0), np.pi * 2 * spin_speed * dt))
+    else:
+        self.wireframes['spin'].transform(wf.rotateAboutVector(self.wireframes['spin'].findCenter(), (0,1,0), np.pi * 2 * spin_speed * dt))
 
 if __name__ == '__main__':
     if concurrent:
